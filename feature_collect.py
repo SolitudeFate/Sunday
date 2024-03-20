@@ -42,6 +42,10 @@ if __name__ == "__main__":
     print("提取完成")
 
     # 对数据进行保存
+    target_folder = "warehouse"
+    if not os.path.exists(target_folder):
+        os.makedirs(target_folder)
+
     with open("./warehouse/database.pickle", 'wb') as db:
         pickle.dump(database, db, pickle.HIGHEST_PROTOCOL)
     with open("./warehouse/song_index.pickle", 'wb') as songs:
