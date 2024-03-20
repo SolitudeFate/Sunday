@@ -3,6 +3,7 @@ import librosa
 from scipy import signal
 from pydub import AudioSegment
 from pydub.utils import make_chunks
+import shutil
 import pickle
 import os
 
@@ -12,6 +13,9 @@ fix_rate = 8000
 window_length_seconds = 0.5
 # 10bit量化
 frequency_bits = 10
+
+# 分割线
+dividing_line = "---------------------------------------"
 
 
 def song_collect(base_path):
@@ -202,7 +206,7 @@ def get_scores(y, fs, database):
 
         scores[song_index] = max_score
 
-    # 对score进行从大到小的排序，也就是对x[1][1]
+    # 对score进行从大到小的排序，也就是对x[1][1]，返回值为排序后的列表
     scores = sorted(scores.items(), key=lambda x: x[1][1], reverse=True)
 
     return scores
@@ -232,6 +236,30 @@ def get_scores2(y, fs, database):
     return scores
 
 
+# 清空文件夹
+def clear_folder():
+    print(dividing_line)
+
+    target_folder = 'test_chunks'
+
+    # 检查目标文件夹是否存在
+    if os.path.exists(target_folder):
+        # 删除目标文件夹及其所有内容
+        shutil.rmtree(target_folder)
+        print(f"文件夹 {target_folder} 已被删除。")
+    else:
+        print(f"文件夹 {target_folder} 不存在。")
+
+    # 检查新文件夹路径是否存在，如果不存在，则创建新文件夹
+    if not os.path.exists(target_folder):
+        os.makedirs(target_folder)
+        print(f"文件夹 {target_folder} 已创建。")
+    else:
+        print(f"文件夹 {target_folder} 已经存在。")
+
+    print(dividing_line)
+
+
 # 将音频分割成10s一段
 def split_mp3_time(file_record):
     # 加载音频文件
@@ -243,153 +271,18 @@ def split_mp3_time(file_record):
     # 将音频切割为10s一个
     chunks = make_chunks(audio, size)
 
+    # 清空文件夹
+    clear_folder()
+
     for i, chunk in enumerate(chunks):
         chunk_path = f"test_chunks/song_{i + 1}_part.mp3"
         # 保存每个音频片段
         chunk.export(chunk_path, format="mp3")
 
     print("音频分割完成")
+    print(dividing_line)
 
-
-if __name__ == "__main__":
-    pass
-
-    # fix_fs = 16000
-    # current_path = os.path.abspath (os.path.dirname (__file__))
-    # path_songs = os.path.join(current_path,'data')
-
-    # dic_idx2song = song_collect(path_songs)
-    # print(dic_idx2song)
-
-    # database = {}
-    # for song_id in dic_idx2song.keys():
-    #     file = dic_idx2song[song_id]
-    #     print("collect info of file ",file)
-
-    #     # 读取音乐
-    #     y,fs = librosa.load(file,sr=fix_fs)
-
-    #     # 提取特征对
-    #     constellation_map = collect_map(y,fs)
-
-    #     # 获取hash值
-    #     hashes = creat_hash(constellation_map,fs,frequency_bits=10,song_id=song_id)
-
-    #     # 把hash信息填充如数据库
-    #     for hash, time_index_pair in hashes.items():
-    #         if hash not in database:
-    #             database[hash] = []
-    #         database[hash].append(time_index_pair)
-
-    # # 数据库写入
-    # with open("database.pickle", 'wb') as db:
-    #     pickle.dump(database, db, pickle.HIGHEST_PROTOCOL)
-    # with open("song_index.pickle", 'wb') as songs:
-    #     pickle.dump(dic_idx2song, songs, pickle.HIGHEST_PROTOCOL)
-
-    # 检索部分：
-
-    # 加载数据库
-    # database = pickle.load(open("database.pickle",'rb'))
-    # dic_idx2song = pickle.load(open("song_index.pickle",'rb'))
-
-    # # 读取歌曲
-    # file = 'record.m4a'
-    # y,fs = librosa.load(file,sr=fix_fs)
-    # scores = getscores(y,fs,database)
-
-    # for k,v in scores:
-    #     file = dic_idx2song[k]
-    #     name = os.path.split(file)[-1]
-    #     print('%s :  %d : %d'%(name,v[0],v[1]))
-
-    # print("检索结果为",os.path.split(dic_idx2song[scores[0][0]])[-1])
-
-    # # 提取hash
-    # constellation = collect_map(y, fs)
-    # hashes = creat_hash(constellation, fs,frequency_bits=10,song_id=None)
-
-    # matches_per_song = {}
-    # for hash, (sample_time, _) in hashes.items():
-    #     if hash in database:
-    #         matching_occurences = database[hash]
-    #         for source_time, song_index in matching_occurences:
-    #             if song_index not in matches_per_song:
-    #                 matches_per_song[song_index] = []
-    #             matches_per_song[song_index].append((hash, sample_time, source_time))
-
-    # print(matches_per_song)
-
-    # for key in matches_per_song.keys():
-    #     name_song = os.path.split(dic_idx2song[key])[-1]
-    #     print("in song %s find %d matched"%(name_song,len(matches_per_song[key])))
-
-    # scores = {}
-
-    # for song_index, matches in matches_per_song.items():
-    #     song_scores_by_offset = {}
-    #     for hash, sample_time, source_time in matches:
-    #         delta = source_time - sample_time
-    #         if delta not in song_scores_by_offset:
-    #             song_scores_by_offset[delta] = 0
-    #         song_scores_by_offset[delta] += 1
-
-    #     max = (0, 0)
-    #     for offset, score in song_scores_by_offset.items():
-    #         if score > max[1]:
-    #             max = (offset, score)
-
-    #     scores[song_index] = max
-
-    # print(scores)
-
-    # file_wav = "十送红军.mp3"
-    # y,fs = librosa.load(file_wav,sr=None)
-
-    # window_length_seconds = 0.5
-    # win_length =int(window_length_seconds*fs) 
-    # hop_length = int(win_length//2)
-
-    # n_fft = 2**(np.ceil(np.log2(win_length)))
-
-    # # frequencies, times, stft = signal.stft(
-    # #     y, fs, nperseg=win_length, nfft=win_length, return_onesided=True
-    # # )
-    # S = librosa.stft(y,n_fft=win_length,hop_length=hop_length,win_length=win_length)
-
-    # S = np.abs(S)
-    # constellation_map = []
-
-    # upper_frequency = fs/2
-    # frequency_bits =10
-
-    # song_id =1
-    # D,T = np.shape(S)
-    # num_peaks = 15
-    # for i in range(T):
-    #     spectrum= S[:,i]
-    #     peaks, props = signal.find_peaks(spectrum, prominence=0, distance=200)
-    #     n_peaks = min(num_peaks, len(peaks))
-    #     largest_peaks = np.argpartition(props["prominences"], -n_peaks)[-n_peaks:]
-
-    #     frequency = i*fs/win_length
-    #     # time = i*hop_length/fs
-    #     constellation_map.append([i, frequency])
-    # database ={}
-    # hashes = {}
-    # for idx, (time, freq) in enumerate(constellation_map):
-    #     for other_time, other_freq in constellation_map[idx : idx + 100]:
-    #         diff = other_time - time
-
-    #         if diff <= 1 or diff > 10:
-    #             continue
-
-    #         freq_binned = freq / upper_frequency * (2 ** frequency_bits)
-    #         other_freq_binned = other_freq / upper_frequency * (2 ** frequency_bits)
-    #         hash = int(freq_binned) | (int(other_freq_binned) << 10) | (int(diff) << 20)
-    #         hashes[hash] = (time, song_id)
-
-    # for hash, time_index_pair in hashes.items():
-    #     if hash not in database:
-    #         database[hash] = []
-    #     database[hash].append(time_index_pair)
+# 获取路径中的文件名部分
+def extract_file_name(path):
+    filename = os.path.basename(path)
+    return filename

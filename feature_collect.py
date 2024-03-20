@@ -1,9 +1,11 @@
 import librosa
-from utility import collect_map, create_hash, song_collect, fix_rate, window_length_seconds, frequency_bits
+from utility import collect_map, create_hash, song_collect, fix_rate, window_length_seconds, frequency_bits, dividing_line
 import os
 import pickle
 
 if __name__ == "__main__":
+
+    print(dividing_line)
 
     # 获取数据库中所有的音乐
     path_music = 'data'
@@ -17,7 +19,7 @@ if __name__ == "__main__":
     # 以列表返回字典所有的键，然后遍历
     for song_id in dic_idx2song.keys():
         file = dic_idx2song[song_id]
-        print("collect info of file ", file)
+        print("正在提取特征 ", file)
 
         # 读取音乐
         y, fs = librosa.load(file, sr=fix_rate)
@@ -36,9 +38,13 @@ if __name__ == "__main__":
                 database[hash] = []
             database[hash].append(time_index_pair)
 
-    # 对数据进行保存
+    print(dividing_line)
+    print("提取完成")
 
+    # 对数据进行保存
     with open("./warehouse/database.pickle", 'wb') as db:
         pickle.dump(database, db, pickle.HIGHEST_PROTOCOL)
     with open("./warehouse/song_index.pickle", 'wb') as songs:
         pickle.dump(dic_idx2song, songs, pickle.HIGHEST_PROTOCOL)
+
+    print(dividing_line)
