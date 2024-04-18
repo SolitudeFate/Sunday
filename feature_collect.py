@@ -1,14 +1,17 @@
-import librosa
-from utility import collect_map, create_hash, song_collect, fix_rate, window_length_seconds, frequency_bits, dividing_line
 import os
 import pickle
 
-if __name__ == "__main__":
+import librosa
 
+from utility import collect_map, create_hash, song_collect, fix_rate, window_length_seconds, frequency_bits, \
+    dividing_line
+
+
+def feature_collect():
     print(dividing_line)
 
     # 获取数据库中所有的音乐
-    path_music = 'data'
+    path_music = 'data_mp3'
     # 获取绝对路径
     current_path = os.path.abspath(os.path.dirname(__file__))
     path_songs = os.path.join(current_path, path_music)
@@ -19,7 +22,8 @@ if __name__ == "__main__":
     # 以列表返回字典所有的键，然后遍历
     for song_id in dic_idx2song.keys():
         file = dic_idx2song[song_id]
-        print("正在提取特征 ", file)
+        file_name = os.path.basename(file)
+        print("正在提取特征 ", file_name, "......")
 
         # 读取音乐
         y, fs = librosa.load(file, sr=fix_rate)
@@ -52,3 +56,7 @@ if __name__ == "__main__":
         pickle.dump(dic_idx2song, songs, pickle.HIGHEST_PROTOCOL)
 
     print(dividing_line)
+
+
+if __name__ == '__main__':
+    feature_collect()

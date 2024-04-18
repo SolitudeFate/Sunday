@@ -1,11 +1,9 @@
-import numpy as np
-import librosa
-from scipy import signal
-from pydub import AudioSegment
-from pydub.utils import make_chunks
-import shutil
-import pickle
 import os
+import shutil
+
+import librosa
+import numpy as np
+from scipy import signal
 
 # 采样率
 fix_rate = 8000
@@ -33,20 +31,6 @@ def song_collect(base_path):
                 index_songs = index_songs + 1
 
     return dic_idx2song
-
-
-def split_song_collect():
-    # 音频分割后保存的文件夹
-    path_music = 'test_chunks'
-    # 获取绝对路径
-    current_path = os.path.abspath(os.path.dirname(__file__))
-    path_songs = os.path.join(current_path, path_music)
-    test_songs = song_collect(path_songs)
-
-    return test_songs
-
-    # for id, name in test_songs.items():
-    #     print(f"{id}  {name}")
 
 
 # 提取局部最大特征点，形成星云图，fs为采样率
@@ -89,44 +73,7 @@ def collect_map(y, fs, window_length_seconds=0.5):
     return constellation_map
 
 
-# # 进行hash编码（仅时域限制）
-# def create_hash(constellation_map, fs, frequency_bits=10, song_id=None):
-#     # 根据奈奎斯特采样准测，频率上限为采样率的一半
-#     upper_frequency = fs / 2
-#     hashes = {}
-#     # 遍历寻找点对
-#     # 第一层for循环为当前点
-#     for idx, (time, freq) in enumerate(constellation_map):
-#         # 第二层for循环，从邻近的200个点中寻找点对
-#         for other_time, other_freq in constellation_map[idx: idx + 200]:
-#             diff = other_time - time
-#             # 对时域进行限制，在200个点中，保留时域相差2到10范围内的点构成点对
-#             if diff <= 1 or diff > 10:
-#                 continue
-#
-#             '''
-#             编码过程：
-#                 将f1和f2进行10bit量化，其余bit用来存储时间偏移，合起来形成32bit的hash嘛
-#                 Hash = bin_f1 | bin_f2 << 10 | diff_t << 20
-#                 Hash:   time = [f1:f2:德尔塔t] : t1
-#                 存储信息为(t1, Hash)
-#
-#             1、先对freq和other_freq进行二进制编码。
-#             freq = n/n_fft*fs，根据奈奎斯特采样准测，freq必定小于采样率fs的一半，即小于upper，
-#             除以upper后为一个0到1之间的值，再乘10bit量化，即乘2的10次，然后取整int()
-#
-#             2、再对二进制编码后的频率进行10bit量化，编成32位的码。
-#             '''
-#             freq_binned = freq / upper_frequency * (2 ** frequency_bits)
-#             other_freq_binned = other_freq / upper_frequency * (2 ** frequency_bits)
-#
-#             hash = int(freq_binned) | (int(other_freq_binned) << 10) | (int(diff) << 20)
-#             # time为点对的起始时间t1
-#             hashes[hash] = (time, song_id)
-#     return hashes
-
-
-# 进行hash编码（频域+时域限制）
+# 进行hash编码（仅时域限制）
 def create_hash(constellation_map, fs, frequency_bits=10, song_id=None):
     # 根据奈奎斯特采样准测，频率上限为采样率的一半
     upper_frequency = fs / 2
@@ -134,18 +81,30 @@ def create_hash(constellation_map, fs, frequency_bits=10, song_id=None):
     # 遍历寻找点对
     # 第一层for循环为当前点
     for idx, (time, freq) in enumerate(constellation_map):
-        # 第二层for循环，从邻近的100个点中寻找点对
+        # 第二层for循环，从邻近的200个点中寻找点对
         for other_time, other_freq in constellation_map[idx: idx + 200]:
-            diff_time = other_time - time
-            diff_freq = abs(other_freq - freq)
-            # 对时域进行限制，在100个点中，保留时域相差2到10范围内的点构成点对
-            if diff_time <= 9 or diff_time > 200 or diff_freq >= 8000:
+            diff = other_time - time
+            # 对时域进行限制，在200个点中，保留时域相差2到10范围内的点构成点对
+            if diff <= 1 or diff > 10:
                 continue
 
+            '''
+            编码过程：
+                将f1和f2进行10bit量化，其余bit用来存储时间偏移，合起来形成32bit的hash嘛
+                Hash = bin_f1 | bin_f2 << 10 | diff_t << 20
+                Hash:   time = [f1:f2:德尔塔t] : t1
+                存储信息为(t1, Hash)
+
+            1、先对freq和other_freq进行二进制编码。
+            freq = n/n_fft*fs，根据奈奎斯特采样准测，freq必定小于采样率fs的一半，即小于upper，
+            除以upper后为一个0到1之间的值，再乘10bit量化，即乘2的10次，然后取整int()
+
+            2、再对二进制编码后的频率进行10bit量化，编成32位的码。
+            '''
             freq_binned = freq / upper_frequency * (2 ** frequency_bits)
             other_freq_binned = other_freq / upper_frequency * (2 ** frequency_bits)
 
-            hash = int(freq_binned) | (int(other_freq_binned) << 10) | (int(diff_time) << 20)
+            hash = int(freq_binned) | (int(other_freq_binned) << 10) | (int(diff) << 20)
             # time为点对的起始时间t1
             hashes[hash] = (time, song_id)
     return hashes
@@ -159,7 +118,7 @@ def create_hash(constellation_map, fs, frequency_bits=10, song_id=None):
 '''
 
 
-# 不仅进行hash码匹配，同时保证时间差固定
+# 不仅进行hash码匹配，同时保证时间差固定。先找到匹配的hash，再从匹配到的hash中再进行固定时间差进行筛选
 def get_scores(y, fs, database):
     # 对检索语音提取hash
     constellation = collect_map(y, fs)
@@ -206,83 +165,7 @@ def get_scores(y, fs, database):
 
         scores[song_index] = max_score
 
-    # 对score进行从大到小的排序，也就是对x[1][1]，返回值为排序后的列表
+    # 对score进行从大到小的排序，也就是对x[1][1]，返回值为排序后的列表，x[1]为value，x[1][1]为score
     scores = sorted(scores.items(), key=lambda x: x[1][1], reverse=True)
 
     return scores
-
-
-# 直接进行hash码匹配
-def get_scores2(y, fs, database):
-    # 对检索语音提取hash
-    constellation = collect_map(y, fs)
-    hashes = create_hash(constellation, fs, frequency_bits=10, song_id=None)
-
-    # 获取与数据库中每首歌的hash匹配
-    matches_per_song = {}
-    # 取出检索语音的一个个hash
-    for hash, (_, _) in hashes.items():
-        # 如果数据集中存在检索语音的hash
-        if hash in database:
-            # 取出检索语音hash对应的value
-            matching_occurences = database[hash]
-            for _, song_id in matching_occurences:
-                if song_id not in matches_per_song:
-                    matches_per_song[song_id] = 0
-                matches_per_song[song_id] += 1
-
-    scores = sorted(matches_per_song.items(), key=lambda x: x[1], reverse=True)
-
-    return scores
-
-
-# 清空文件夹
-def clear_folder():
-    print(dividing_line)
-
-    target_folder = 'test_chunks'
-
-    # 检查目标文件夹是否存在
-    if os.path.exists(target_folder):
-        # 删除目标文件夹及其所有内容
-        shutil.rmtree(target_folder)
-        print(f"文件夹 {target_folder} 已被删除。")
-    else:
-        print(f"文件夹 {target_folder} 不存在。")
-
-    # 检查新文件夹路径是否存在，如果不存在，则创建新文件夹
-    if not os.path.exists(target_folder):
-        os.makedirs(target_folder)
-        print(f"文件夹 {target_folder} 已创建。")
-    else:
-        print(f"文件夹 {target_folder} 已经存在。")
-
-    print(dividing_line)
-
-
-# 将音频分割成10s一段
-def split_mp3_time(file_record):
-    # 加载音频文件
-    audio = AudioSegment.from_file(file_record, "mp3")
-
-    # 切割的毫秒数 1s=1000ms
-    size = 10000
-
-    # 将音频切割为10s一个
-    chunks = make_chunks(audio, size)
-
-    # 清空文件夹
-    clear_folder()
-
-    for i, chunk in enumerate(chunks):
-        chunk_path = f"test_chunks/song_{i + 1}_part.mp3"
-        # 保存每个音频片段
-        chunk.export(chunk_path, format="mp3")
-
-    print("音频分割完成")
-    print(dividing_line)
-
-# 获取路径中的文件名部分
-def extract_file_name(path):
-    filename = os.path.basename(path)
-    return filename
