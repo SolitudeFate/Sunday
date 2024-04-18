@@ -53,7 +53,7 @@ def music_research(song_path, self):
     self.main.label.setText("识别完成 √")
 
 # if __name__ == '__main__':
-#     song_path = "test_mp3/《人鱼的眼泪》EXO.mp3"
+#     song_path = "test_mp3/未知音频1.mp3"
 #     result, song_name = music_research(song_path)
 #     print(result)
 #     print(song_name)

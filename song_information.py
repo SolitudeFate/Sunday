@@ -70,7 +70,7 @@ async def stream_output_song_info(song_name, self):
     response = client.chat.completions.create(
         model="glm-4",
         messages=[
-            {"role": "system", "content": "详细地介绍一下这首歌的歌曲信息"},
+            {"role": "system", "content": "详细地介绍一下这首歌的歌曲信息和歌手信息，回复格式不要用markdown格式，我这里无法解析markdown"},
             {"role": "user", "content": song_name},
         ],
         stream=True,

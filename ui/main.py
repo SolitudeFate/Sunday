@@ -81,6 +81,7 @@ class MainPage(QMainWindow, QtStyleTools):
 
 
 app = QApplication([])
+app.setWindowIcon(QIcon('Images/logo.jpg'))
 main_page = MainPage()
 main_page.main.show()
 app.exec_()

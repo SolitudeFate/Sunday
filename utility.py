@@ -1,5 +1,4 @@
 import os
-import shutil
 
 import librosa
 import numpy as np
