@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>897</width>
-    <height>648</height>
+    <width>545</width>
+    <height>730</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Sunday</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -59,7 +59,7 @@
         </spacer>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,4,2">
+        <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,2,3">
          <item>
           <widget class="QLabel" name="label">
            <property name="text">
@@ -241,7 +241,7 @@ p, li { white-space: pre-wrap; }
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>897</width>
+     <width>545</width>
      <height>26</height>
     </rect>
    </property>

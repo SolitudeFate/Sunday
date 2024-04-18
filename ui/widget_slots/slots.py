@@ -21,6 +21,7 @@ def add_all_items(combo_box):
         song_name = os.path.split(song_path)[-1]
         combo_box.addItem(song_name)
 
+
 # 从test集中寻找该歌曲
 def find_test_song(song_name):
     dir_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))

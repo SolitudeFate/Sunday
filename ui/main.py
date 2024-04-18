@@ -1,6 +1,7 @@
 import os
 from threading import Thread
 
+from PySide2.QtGui import QIcon
 from PySide2.QtUiTools import QUiLoader
 from PySide2.QtWidgets import QApplication, QMainWindow, QMessageBox
 from qt_material import apply_stylesheet, QtStyleTools
@@ -32,6 +33,9 @@ class MainPage(QMainWindow, QtStyleTools):
         self.main.button1.clicked.connect(self.play_test_song)
         self.main.button2.clicked.connect(self.research_music)
         self.main.button3.clicked.connect(self.play_research_song)
+
+        # 保持视角随光标移动
+        self.main.textEdit.textChanged.connect(lambda: self.main.textEdit.ensureCursorVisible())
 
     # 播放需要识别的歌曲
     def play_test_song(self):

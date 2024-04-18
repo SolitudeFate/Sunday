@@ -4,7 +4,7 @@ import pickle
 
 import librosa
 
-from song_information import stream_output
+from song_information import stream_output_song_name, stream_output_song_info
 from utility import fix_rate, dividing_line, get_scores
 
 
@@ -44,9 +44,12 @@ def music_research(song_path, self):
     print("song_name为", song_name)
     print(dividing_line)
 
-    self.main.lineEdit.setText(song_name)
+    # 输出识别的歌曲名后，lineEdit获取焦点
+    self.main.lineEdit.setFocus()
+    asyncio.run(stream_output_song_name(song_name, self))
+
     self.main.label.setText("正在检索歌曲信息......")
-    asyncio.run(stream_output(song_name, self))
+    asyncio.run(stream_output_song_info(song_name, self))
     self.main.label.setText("识别完成 √")
 
 # if __name__ == '__main__':
