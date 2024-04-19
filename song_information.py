@@ -64,9 +64,9 @@ def add_response_text(text: str):
     buffer += text
 
 
-async def stream_output_song_info(song_name, self):
+async def stream_output_song_info(api_key, song_name, self):
     global finished
-    client = ZhipuAI(api_key="5579e3ae45b0c5873c19c6b94d682332.E7dXLEng9p0gzyUV")
+    client = ZhipuAI(api_key=api_key)
     response = client.chat.completions.create(
         model="glm-4",
         messages=[

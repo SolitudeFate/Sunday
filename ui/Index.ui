@@ -26,7 +26,7 @@
          <item>
           <widget class="QLabel" name="label_1">
            <property name="text">
-            <string>需要识别的音频路径：</string>
+            <string>选择需要识别的音频：</string>
            </property>
           </widget>
          </item>

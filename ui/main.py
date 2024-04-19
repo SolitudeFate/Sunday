@@ -12,9 +12,10 @@ from ui.widget_slots.slots import add_all_items, find_data_song, find_test_song
 
 class MainPage(QMainWindow, QtStyleTools):
 
-    def __init__(self):
+    def __init__(self, api_key):
         super().__init__()
         self.main = QUiLoader().load('Index.ui')
+        self.api_key = api_key
 
         # 设置默认主题
         apply_stylesheet(app, theme='dark_yellow.xml')
@@ -50,8 +51,8 @@ class MainPage(QMainWindow, QtStyleTools):
             msg_box.exec_()
 
     # 打开媒体播放器
-    def open_music_player(self, test_song_path):
-        os.startfile(test_song_path)
+    def open_music_player(self, song_path):
+        os.startfile(song_path)
 
     # 开始识别
     def research_music(self):
@@ -61,8 +62,10 @@ class MainPage(QMainWindow, QtStyleTools):
         if index != 0:
             test_song_name = self.main.comboBox1.currentText()
             test_song_path = find_test_song(test_song_name)
-            thread = Thread(target=music_research, args=(test_song_path, self))
-            thread.start()
+            thread1 = Thread(target=music_research, args=(self.api_key, test_song_path, self))
+            thread2 = Thread(target=self.research_wait(), args=(self,))
+            thread1.start()
+            thread2.start()
         else:
             msg_box = QMessageBox(QMessageBox.Warning, '提示', '你需要选择歌曲才能开始识别!')
             msg_box.exec_()
@@ -73,15 +76,28 @@ class MainPage(QMainWindow, QtStyleTools):
 
         if research_song_name != '':
             research_song_path = find_data_song(research_song_name)
-            thread = Thread(target=self.open_music_player, args=(research_song_path,))
-            thread.start()
+            if len(research_song_path) != 0:
+                thread = Thread(target=self.open_music_player, args=(research_song_path,))
+                thread.start()
+            else:
+                msg_box = QMessageBox(QMessageBox.Warning, '提示', '曲库中并没有这首歌！')
+                msg_box.exec_()
         else:
             msg_box = QMessageBox(QMessageBox.Warning, '提示', '你需要等待歌曲识别出结果后才能播放!')
             msg_box.exec_()
 
+    # 识别等待
+    def research_wait(self):
+        msg_box = QMessageBox(QMessageBox.Warning, '提示', '接下来的识别过程需要您耐心地等待一段时间......')
+        msg_box.exec_()
 
-app = QApplication([])
-app.setWindowIcon(QIcon('Images/logo.jpg'))
-main_page = MainPage()
-main_page.main.show()
-app.exec_()
+
+if __name__ == '__main__':
+    app = QApplication([])
+    app.setWindowIcon(QIcon('Images/logo.jpg'))
+
+    api_key = input("请输入你的chatglm的api_key：")
+
+    main_page = MainPage(api_key)
+    main_page.main.show()
+    app.exec_()

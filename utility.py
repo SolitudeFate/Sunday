@@ -12,7 +12,7 @@ window_length_seconds = 0.5
 frequency_bits = 10
 
 # 分割线
-dividing_line = "---------------------------------------"
+dividing_line = "--------------------------------------------------------------------------------------------"
 
 
 def song_collect(base_path):

@@ -47,8 +47,9 @@ def find_data_song(song_name):
             if file.endswith(".mp3"):
                 if re.search(song_name, file):
                     song_path = os.path.join(roots, file)
-                    return song_path
+    return song_path
 
 
 if __name__ == '__main__':
-    song_path = find_data_song("《人鱼的眼泪》EXO")
+    song_path = find_data_song("《Bea")
+    print(song_path)

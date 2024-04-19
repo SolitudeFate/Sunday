@@ -8,8 +8,9 @@ from song_information import stream_output_song_name, stream_output_song_info
 from utility import fix_rate, dividing_line, get_scores
 
 
-def music_research(song_path, self):
+def music_research(api_key, song_path, self):
     self.main.label.setText("正在识别歌曲名称......")
+    print(dividing_line)
     # 加载数据库
     database = pickle.load(open("../warehouse/database.pickle", 'rb'))
     dic_idx2song = pickle.load(open("../warehouse/song_index.pickle", 'rb'))
@@ -49,11 +50,11 @@ def music_research(song_path, self):
     asyncio.run(stream_output_song_name(song_name, self))
 
     self.main.label.setText("正在检索歌曲信息......")
-    asyncio.run(stream_output_song_info(song_name, self))
+    asyncio.run(stream_output_song_info(api_key, song_name, self))
     self.main.label.setText("识别完成 √")
 
 # if __name__ == '__main__':
-#     song_path = "test_mp3/未知音频1.mp3"
+#     song_path = "test_mp3/未知音频2.mp3"
 #     result, song_name = music_research(song_path)
 #     print(result)
 #     print(song_name)
