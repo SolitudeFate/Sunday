@@ -3,8 +3,15 @@ import re
 
 from utility import song_collect
 
+# 获取data集中所有的音乐
+def get_data_songs_path():
+    path_music = 'data_mp3'
+    current_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    path_songs = os.path.join(current_path, path_music)
+    dic_idx2song = song_collect(path_songs)
+    return dic_idx2song
 
-# 获取数据库中所有的音乐
+# 获取test集中所有的音乐
 def get_test_songs_path():
     path_music = 'test_mp3'
     current_path = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
