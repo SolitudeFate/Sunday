@@ -8,6 +8,7 @@ from qt_material import apply_stylesheet, QtStyleTools
 
 from music_research import music_research
 from ui.widget_slots.slots import add_all_items, find_data_song, find_test_song
+from user_inquiry import answer_user_inquiry
 
 
 class MainPage(QMainWindow, QtStyleTools):
@@ -34,6 +35,11 @@ class MainPage(QMainWindow, QtStyleTools):
         self.main.button1.clicked.connect(self.play_test_song)
         self.main.button2.clicked.connect(self.research_music)
         self.main.button3.clicked.connect(self.play_research_song)
+        self.main.button4.clicked.connect(self.answer_the_question)
+
+        # 当用户在 QLineEdit 中输入文本并按下回车键时，returnPressed 信号会被触发，然后自动调用 QPushButton 的 click 方法，就像用户手动点击了按钮一样。
+        # 将 QLineEdit 的 returnPressed 信号连接到按钮的 click 方法
+        self.main.lineEdit_2.returnPressed.connect(self.main.button4.click)
 
         # 保持视角随光标移动
         self.main.textEdit.textChanged.connect(lambda: self.main.textEdit.ensureCursorVisible())
@@ -91,10 +97,22 @@ class MainPage(QMainWindow, QtStyleTools):
         msg_box = QMessageBox(QMessageBox.Warning, '提示', '接下来的识别过程需要您耐心地等待一段时间......')
         msg_box.exec_()
 
+    # 回答问题
+    def answer_the_question(self):
+        self.main.textEdit.setText('')
+        index = self.main.comboBox1.currentIndex()
+        research_song_name = self.main.lineEdit.text()
+        question = self.main.lineEdit_2.text()
+        if index != 0 and research_song_name != '':
+            thread = Thread(target=answer_user_inquiry, args=(self.api_key, research_song_name, question, self))
+            thread.start()
+        else:
+            msg_box = QMessageBox(QMessageBox.Warning, '提示', '你需要识别出歌曲以后才可以继续提问！')
+            msg_box.exec_()
 
 if __name__ == '__main__':
     app = QApplication([])
-    app.setWindowIcon(QIcon('Images/logo.jpg'))
+    app.setWindowIcon(QIcon('Images/logo.png'))
 
     api_key = input("请输入你的chatglm的api_key：")
 
