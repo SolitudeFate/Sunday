@@ -5,7 +5,7 @@ import numpy as np
 from scipy import signal
 
 # 采样率
-fix_rate = 8000
+fix_rate = 16000
 # 窗口宽度
 window_length_seconds = 0.5
 # 10bit量化
@@ -55,7 +55,7 @@ def collect_map(y, fs, window_length_seconds=0.5):
         signal.find_peaks()寻找局部最大，distance限制了两个局部最大值之间的最小距离
         peaks是局部最大值的坐标，props是该点的属性
         '''
-        peaks, props = signal.find_peaks(spectrum, prominence=0, distance=20)
+        peaks, props = signal.find_peaks(spectrum, prominence=0, distance=200)
         n_peaks = min(num_peaks, len(peaks))
         '''
         prominences是局部最大值点的显著性，值越大，显著性越好
@@ -80,10 +80,10 @@ def create_hash(constellation_map, fs, frequency_bits=10, song_id=None):
     # 遍历寻找点对
     # 第一层for循环为当前点
     for idx, (time, freq) in enumerate(constellation_map):
-        # 第二层for循环，从邻近的200个点中寻找点对
-        for other_time, other_freq in constellation_map[idx: idx + 200]:
+        # 第二层for循环，从邻近的100个点中寻找点对
+        for other_time, other_freq in constellation_map[idx: idx + 100]:
             diff = other_time - time
-            # 对时域进行限制，在200个点中，保留时域相差2到10范围内的点构成点对
+            # 对时域进行限制，在100个点中，保留时域相差2到10范围内的点构成点对
             if diff <= 1 or diff > 10:
                 continue
 
