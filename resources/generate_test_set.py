@@ -8,7 +8,7 @@ from pydub.utils import make_chunks
 from ui.widget_slots.slots import get_data_songs_path
 
 
-def split_mp3_time(songs_path):
+def generate_test_set(songs_path):
     for id, song_path in songs_path.items():
         # 加载音频文件
         audio = AudioSegment.from_file(song_path, "mp3")
@@ -31,4 +31,4 @@ def split_mp3_time(songs_path):
 
 if __name__ == '__main__':
     songs_path = get_data_songs_path()
-    split_mp3_time(songs_path)
+    generate_test_set(songs_path)
